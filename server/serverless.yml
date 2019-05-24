@@ -1,0 +1,50 @@
+service: cabify-node-server
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:Scan
+      Resource: "arn:aws:dynamodb:us-east-1:854591224297:table/products"
+
+functions:
+  createProduct:
+    handler: create.run
+    events:
+      - http:
+          path: products
+          method: post
+  getProduct:
+    handler: get.run
+    events:
+      - http:
+          path: products/{id}
+          method: get
+  getProducts:
+    handler: getAll.run
+    events:
+      - http:
+          path: products
+          method: get
+
+resources:
+  Resources:
+    ProductsDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: 'products'
